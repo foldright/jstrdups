@@ -1,5 +1,9 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
 plugins {
     kotlin("jvm") version "2.1.20"
+    id("com.github.johnrengelman.shadow") version "8.1.1"
+    application
 }
 
 group = "com.example"
@@ -21,5 +25,21 @@ tasks.test {
 }
 
 kotlin {
-    jvmToolchain(21)
+    jvmToolchain(17)
+}
+
+val mainClassName = "com.example.scf.StringConstantFinder"
+
+application {
+    mainClass.set(mainClassName)
+}
+
+tasks.withType<ShadowJar> {
+    manifest {
+        attributes["Main-Class"] = mainClassName
+    }
+}
+
+tasks.build {
+    dependsOn(tasks.shadowJar)
 }

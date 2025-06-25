@@ -9,6 +9,7 @@ import com.github.javaparser.ast.CompilationUnit
 import com.github.javaparser.ast.expr.StringLiteralExpr
 import com.github.javaparser.utils.ParserCollectionStrategy
 import java.nio.file.Paths
+import kotlin.io.path.absolute
 
 
 fun main(args: Array<String>) {
@@ -35,7 +36,8 @@ private fun findAllStringLiterals(cu: CompilationUnit, minLen: Int = 4): List<St
 
 fun collectCompilationUnits(projectRootPath: String, excludeTestDir: Boolean = true): List<CompilationUnit> =
     ParserCollectionStrategy(ParserConfiguration().setLanguageLevel(JAVA_17))
-        .collect(Paths.get(projectRootPath)).sourceRoots
+        .collect(Paths.get(projectRootPath).absolute().normalize())
+        .sourceRoots
         .onEach { println("found ${it.root}") }
         // ℹ️ 不处理测试代码
         .filterNot { excludeTestDir && it.root.endsWith("/src/test/java") }
