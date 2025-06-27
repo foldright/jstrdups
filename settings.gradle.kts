@@ -1,1 +1,1 @@
-rootProject.name = "java-string-constants-finder"
+rootProject.name = "java-duplicate-string-literal-finder"

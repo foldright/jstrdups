@@ -34,7 +34,7 @@ sourceSets {
 
 tasks.test { useJUnitPlatform() }
 
-val mainClassName = "com.example.scf.StringConstantFinder"
+val mainClassName = "com.example.scf.DuplicateStringLiteralFinder"
 application { mainClass.set(mainClassName) }
 tasks.withType<ShadowJar> {
   manifest { attributes["Main-Class"] = mainClassName }
