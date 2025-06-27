@@ -1,45 +1,42 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
+
 plugins {
-    kotlin("jvm") version "2.1.20"
-    id("com.github.johnrengelman.shadow") version "8.1.1"
-    application
+  val kotlinVersion = "2.1.21"
+
+  java
+  kotlin("jvm") version kotlinVersion
+  kotlin("kapt") version kotlinVersion
+  application
+  id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
 group = "com.example"
 version = "1.0-SNAPSHOT"
 
-repositories {
-    mavenCentral()
-}
+repositories { mavenCentral() }
 
+val picocliVersion = "4.7.7"
 dependencies {
-    implementation("com.github.javaparser:javaparser-core:3.27.0")
-    implementation("com.google.guava:guava:33.4.8-jre")
+  implementation("com.github.javaparser:javaparser-core:3.27.0")
 
-    testImplementation(kotlin("test"))
+  implementation("info.picocli:picocli:$picocliVersion")
+  kapt("info.picocli:picocli-codegen:$picocliVersion")
+
+  testImplementation(kotlin("test"))
 }
 
-tasks.test {
-    useJUnitPlatform()
+kotlin { jvmToolchain(17) }
+sourceSets {
+  main { java.srcDir("src/main/java") }
+  test { java.srcDir("src/test/java") }
 }
 
-kotlin {
-    jvmToolchain(17)
-}
+tasks.test { useJUnitPlatform() }
 
 val mainClassName = "com.example.scf.StringConstantFinder"
-
-application {
-    mainClass.set(mainClassName)
-}
-
+application { mainClass.set(mainClassName) }
 tasks.withType<ShadowJar> {
-    manifest {
-        attributes["Main-Class"] = mainClassName
-    }
+  manifest { attributes["Main-Class"] = mainClassName }
 }
-
-tasks.build {
-    dependsOn(tasks.shadowJar)
-}
+tasks.build { dependsOn(tasks.shadowJar) }
