@@ -14,8 +14,10 @@
       <w>Xlint</w>
       <w>archunit</w>
       <w>autoscan</w>
+      <w>buildtools</w>
       <w>dists</w>
       <w>doctoc</w>
+      <w>dslf</w>
       <w>foldright</w>
       <w>gradlew</w>
       <w>johnrengelman</w>

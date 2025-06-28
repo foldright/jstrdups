@@ -9,10 +9,12 @@ plugins {
   kotlin("kapt") version kotlinVersion
   application
   id("com.github.johnrengelman.shadow") version "8.1.1"
+  // https://graalvm.github.io/native-build-tools/latest/gradle-plugin.html
+  id("org.graalvm.buildtools.native") version "0.10.6"
 }
 
-group = "com.example"
-version = "1.0-SNAPSHOT"
+group = "io.foldright"
+version = "1.0.0-SNAPSHOT"
 
 repositories { mavenCentral() }
 
@@ -27,16 +29,18 @@ dependencies {
 }
 
 kotlin { jvmToolchain(17) }
-sourceSets {
-  main { java.srcDir("src/main/java") }
-  test { java.srcDir("src/test/java") }
-}
 
 tasks.test { useJUnitPlatform() }
 
-val mainClassName = "com.example.scf.DuplicateStringLiteralFinder"
+val mainClassName = "io.foldright.dslf.DuplicateStringLiteralFinder"
 application { mainClass.set(mainClassName) }
 tasks.withType<ShadowJar> {
   manifest { attributes["Main-Class"] = mainClassName }
 }
 tasks.build { dependsOn(tasks.shadowJar) }
+
+graalvmNative {
+  agent {
+    enabled.set(true)
+  }
+}

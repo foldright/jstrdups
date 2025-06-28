@@ -1,4 +1,4 @@
-package com.example.scf
+package io.foldright.dslf
 
 import com.github.javaparser.ParserConfiguration
 import com.github.javaparser.ParserConfiguration.LanguageLevel.JAVA_17
