@@ -6,6 +6,7 @@ import com.github.javaparser.Position
 import com.github.javaparser.ast.CompilationUnit
 import com.github.javaparser.ast.expr.StringLiteralExpr
 import com.github.javaparser.utils.ParserCollectionStrategy
+import com.github.javaparser.utils.SourceRoot
 import picocli.CommandLine
 import picocli.CommandLine.*
 import java.nio.file.Path
@@ -33,7 +34,7 @@ class DuplicateStringLiteralFinder : Runnable {
 
     @Option(
         names = ["--min-string-len", "-l"],
-        description = ["minimal string length(char count) of string literal to find, default is 2"]
+        description = ["minimal string length(char count) of string literal to find, default is 4"]
     )
     var minStrLen: Int = 4
 
@@ -43,9 +44,12 @@ class DuplicateStringLiteralFinder : Runnable {
     )
     var minDuplicateCount: Int = 2
 
+    @Option(names = ["--verbose", "-v"], description = ["print messages about progress"])
+    var verbose: Boolean = false
+
     override fun run() {
         val compilationUnitList = collectCompilationUnits(
-            projectRootDir.toNormalizePath(), includeTestDir
+            projectRootDir.toNormalizePath(), includeTestDir, verbose
         )
         compilationUnitList.findDuplicateStrLiteralInfos(minStrLen, minDuplicateCount)
             .print(absolutePath)
@@ -53,19 +57,28 @@ class DuplicateStringLiteralFinder : Runnable {
 
     companion object {
         @JvmStatic
-        fun main(args: Array<String>): Unit = exitProcess(CommandLine(DuplicateStringLiteralFinder()).execute(*args))
+        fun main(args: Array<String>) {
+            exitProcess(CommandLine(DuplicateStringLiteralFinder()).execute(*args))
+        }
     }
 }
 
 private fun Path.toNormalizePath(): Path = absolute().normalize()
 
 private fun collectCompilationUnits(
-    projectRootPath: Path, includeTestDir: Boolean = false
+    projectRootPath: Path, includeTestDir: Boolean, verbose: Boolean
 ): List<CompilationUnit> = ParserCollectionStrategy(ParserConfiguration().setLanguageLevel(JAVA_17))
     .collect(projectRootPath)
     .sourceRoots
-    .onEach { println("found ${it.root}") }
-    .filter { includeTestDir || !it.root.endsWith("/src/test/java") }
+    .filter { sourceRoot: SourceRoot ->
+        val root: Path = sourceRoot.root
+        val result = includeTestDir || !root.endsWith("test/java")
+        result.also {
+            if (!verbose) return@also
+            if (it) println("found  source root: $root")
+            else println("ignore source root: $root")
+        }
+    }
     .flatMap { it.tryToParseParallelized() }
     .filter { it.result.isPresent }
     .map { it.result.get() }
@@ -126,6 +139,6 @@ data class GroupStrLiterals(
  */
 data class StrLiteral(
     val value: String,
-    val stringLiteralExpr: StringLiteralExpr,
+    val expr: StringLiteralExpr,
     val cu: CompilationUnit
 )

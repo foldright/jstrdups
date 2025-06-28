@@ -43,4 +43,11 @@ graalvmNative {
   agent {
     enabled.set(true)
   }
+  graalvmNative {
+    binaries {
+      named("main") {
+        jvmArgs.add("-Xmx4g")
+      }
+    }
+  }
 }
