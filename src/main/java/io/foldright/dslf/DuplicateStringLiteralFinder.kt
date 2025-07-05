@@ -15,9 +15,9 @@ import kotlin.system.exitProcess
 
 
 @Command(
-    name = "Java Duplicate String Literal Finder",
-    version = ["0.1.0"], mixinStandardHelpOptions = true,
-    description = ["Find duplicate string literals in java files under current directory"]
+    name = "jstrdups", version = ["0.1.0"],
+    description = ["Find duplicate string literals in java files under current directory"],
+    mixinStandardHelpOptions = true
 )
 class DuplicateStringLiteralFinder : Runnable {
     @Parameters(index = "0", defaultValue = ".", description = ["Project root dir, default is the current directory"])

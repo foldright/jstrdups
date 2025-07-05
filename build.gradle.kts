@@ -9,12 +9,10 @@ plugins {
   kotlin("kapt") version kotlinVersion
   application
   id("com.github.johnrengelman.shadow") version "8.1.1"
-  // https://graalvm.github.io/native-build-tools/latest/gradle-plugin.html
-  id("org.graalvm.buildtools.native") version "0.10.6"
 }
 
 group = "io.foldright"
-version = "1.0.0-SNAPSHOT"
+version = "0.1.0-SNAPSHOT"
 
 repositories { mavenCentral() }
 
@@ -26,9 +24,10 @@ dependencies {
   kapt("info.picocli:picocli-codegen:$picocliVersion")
 
   testImplementation(kotlin("test"))
+  compileOnly("org.jetbrains:annotations:26.0.2")
 }
 
-kotlin { jvmToolchain(17) }
+kotlin { jvmToolchain(8) }
 
 tasks.test { useJUnitPlatform() }
 
@@ -36,18 +35,9 @@ val mainClassName = "io.foldright.dslf.DuplicateStringLiteralFinder"
 application { mainClass.set(mainClassName) }
 tasks.withType<ShadowJar> {
   manifest { attributes["Main-Class"] = mainClassName }
+  exclude("META-INF/native-image/")
+  dependencies {
+    exclude(dependency("org.jetbrains:annotations:.*"))
+  }
 }
 tasks.build { dependsOn(tasks.shadowJar) }
-
-graalvmNative {
-  agent {
-    enabled.set(true)
-  }
-  graalvmNative {
-    binaries {
-      named("main") {
-        jvmArgs.add("-Xmx4g")
-      }
-    }
-  }
-}
