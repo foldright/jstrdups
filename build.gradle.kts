@@ -30,7 +30,6 @@ kotlin { jvmToolchain(8) }
 tasks.test { useJUnitPlatform() }
 
 
-val appName = "jstrdups"
 val mainClassName = "io.foldright.dslf.DuplicateStringLiteralFinder"
 val buildDir: File = layout.buildDirectory.get().asFile
 
@@ -42,17 +41,16 @@ val taskGenAutoComplete by tasks.registering(JavaExec::class) {
 }
 
 distributions {
-  val completionFile: File = buildDir.resolve("${appName}_completion")
+  val completionFile: File = buildDir.resolve("${project.name}_completion")
   main {
     contents {
       into("etc/bash_completion.d") { from(completionFile) }
-      into("share/zsh/site-functions") { from(completionFile).rename { "_$appName" } }
+      into("share/zsh/site-functions") { from(completionFile).rename { "_${project.name}" } }
     }
   }
 }
 
 application {
-  applicationName = appName
   mainClass = mainClassName
 }
 

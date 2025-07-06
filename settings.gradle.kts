@@ -1,1 +1,1 @@
-rootProject.name = "java-duplicate-string-literal-finder"
+rootProject.name = "jstrdups"
