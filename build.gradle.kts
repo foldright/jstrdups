@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "io.foldright"
-version = "0.1.0-SNAPSHOT"
+version = "0.2.0-SNAPSHOT"
 
 repositories { mavenCentral() }
 
@@ -46,7 +46,7 @@ distributions {
   main {
     contents {
       into("etc/bash_completion.d") { from(completionFile) }
-      into("zsh/site-functions") { from(completionFile).rename { "_$appName" } }
+      into("share/zsh/site-functions") { from(completionFile).rename { "_$appName" } }
     }
   }
 }

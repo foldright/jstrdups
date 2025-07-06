@@ -15,7 +15,7 @@ import kotlin.system.exitProcess
 
 
 @Command(
-    name = "jstrdups", version = ["0.1.0"],
+    name = "jstrdups", version = ["0.2.0-SNAPSHOT"],
     description = ["Find duplicate string literals in java files under current directory"],
     mixinStandardHelpOptions = true
 )
@@ -40,7 +40,7 @@ class DuplicateStringLiteralFinder : Runnable {
 
     @Option(
         names = ["--min-duplicate-count", "-d"],
-        description = ["minimal duplicate count of string literal to find"]
+        description = ["minimal duplicate count of string literal to find, default is 2"]
     )
     var minDuplicateCount: Int = 2
 
