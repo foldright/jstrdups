@@ -1,3 +1,4 @@
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 
@@ -22,6 +23,12 @@ dependencies {
   kapt("info.picocli:picocli-codegen:$picocliVersion")
 
   testImplementation(kotlin("test"))
+
+  val kotestVersion = "5.9.1"
+  testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
+  testImplementation("io.kotest:kotest-assertions-core:$kotestVersion")
+  testImplementation("io.kotest:kotest-property:$kotestVersion")
+
   compileOnly("org.jetbrains:annotations:26.0.2")
 }
 configurations.runtimeClasspath {
@@ -32,7 +39,10 @@ java.sourceCompatibility = JavaVersion.VERSION_1_8
 // https://kotlinlang.org/docs/gradle-compiler-options.html#centralize-compiler-options-and-use-types
 kotlin.compilerOptions.jvmTarget = JvmTarget.JVM_1_8
 
-tasks.test { useJUnitPlatform() }
+tasks.test {
+  useJUnitPlatform()
+  testLogging.exceptionFormat = TestExceptionFormat.FULL
+}
 
 
 val mainClassName = "io.foldright.dslf.DuplicateStringLiteralFinder"

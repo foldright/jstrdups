@@ -11,6 +11,7 @@ import picocli.CommandLine
 import picocli.CommandLine.*
 import java.nio.file.Path
 import kotlin.io.path.absolute
+import kotlin.io.path.relativeTo
 import kotlin.system.exitProcess
 
 
@@ -49,10 +50,10 @@ class DuplicateStringLiteralFinder : Runnable {
 
     override fun run() {
         val compilationUnitList = collectCompilationUnits(
-            projectRootDir.toNormalizePath(), includeTestDir, verbose
+            projectRootDir.normalizedAbsPath(), includeTestDir, verbose
         )
         compilationUnitList.findDuplicateStrLiteralInfos(minStrLen, minDuplicateCount)
-            .print(absolutePath)
+            .print(projectRootDir, absolutePath)
     }
 
     companion object {
@@ -62,8 +63,6 @@ class DuplicateStringLiteralFinder : Runnable {
         }
     }
 }
-
-private fun Path.toNormalizePath(): Path = absolute().normalize()
 
 private fun collectCompilationUnits(
     projectRootPath: Path, includeTestDir: Boolean, verbose: Boolean
@@ -96,30 +95,34 @@ private fun CompilationUnit.findAllStringLiterals(minLen: Int): List<StrLiteral>
         .filter { it.value.length >= minLen }
         .map { StrLiteral(it.value, it, this) }
 
-private fun List<GroupStrLiterals>.print(absolutePath: Boolean) {
+private fun List<GroupStrLiterals>.print(projectRootDir: Path, absolutePath: Boolean) {
     val inJetBrainsIde: Boolean = System.getenv("TERMINAL_EMULATOR")?.contains("JetBrains", true) ?: false
+
+    val groupCountWidth = this.count().toString().length
+    val maxDupCountWidth = this.maxOfOrNull { it.strLiterals.size.toString().length } ?: 1
 
     forEachIndexed { index, (v, infoList) ->
         System.out.printf(
-            "[%3d/%3d](count: %2d) duplicate string literal \"%s\" at%n",
+            "[%${groupCountWidth}s/%s](count: %${maxDupCountWidth}s) duplicate string literal \"%s\" at%n",
             index + 1, size, infoList.size, v
         )
         infoList.forEachIndexed { idx, (_, expr, cu) ->
             val p: Position = expr.begin.get()
+            val indicator = String.format("  [%${maxDupCountWidth}s/%${maxDupCountWidth}s] ", idx + 1, infoList.size)
             when {
                 absolutePath -> System.out.printf(
-                    "  [%2d/%2d] %s:%s:%s%n",
-                    idx + 1, infoList.size, cu.storage.get().path.toNormalizePath(), p.line, p.column
+                    "%s%s:%s:%s%n",
+                    indicator, cu.storage.get().path.normalizedAbsPath(), p.line, p.column
                 )
 
                 inJetBrainsIde -> System.out.printf(
-                    "  [%2d/%2d] .(%s:%s):%s%n",
-                    idx + 1, infoList.size, cu.storage.get().path.fileName, p.line, p.column
+                    "%s.(%s:%s):%s%n",
+                    indicator, cu.storage.get().path, p.line, p.column
                 )
 
                 else -> System.out.printf(
-                    "  [%2d/%2d] %s:%s:%s%n",
-                    idx + 1, infoList.size, cu.storage.get().path.fileName, p.line, p.column
+                    "%s%s:%s:%s%n",
+                    indicator, cu.storage.get().path.alignTo(projectRootDir), p.line, p.column
                 )
             }
         }
@@ -142,3 +145,9 @@ data class StrLiteral(
     val expr: StringLiteralExpr,
     val cu: CompilationUnit
 )
+
+internal fun Path.normalizedAbsPath(): Path = absolute().normalize()
+
+internal fun Path.alignTo(aim: Path): Path =
+    if (aim.isAbsolute) normalizedAbsPath()
+    else absolute().relativeTo(aim.absolute()).normalize()
