@@ -11,7 +11,7 @@ jobs:
     name: CI on Java ${{ matrix.java }} OS ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ ubuntu-latest ]
+        os: [ ubuntu-latest, windows-latest, macos-latest ]
         java: [ 8, 11, 17, 21, 24 ]
       fail-fast: false
       max-parallel: 64
@@ -36,3 +36,4 @@ jobs:
         run: |
           git status --short
           [ -z "$(git status --short)" ]
+        if: runner.os != 'Windows'

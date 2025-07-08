@@ -1,3 +1,6 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
   val kotlinVersion = "2.1.21"
   kotlin("jvm") version kotlinVersion
@@ -25,7 +28,14 @@ configurations.runtimeClasspath {
   exclude("org.jetbrains", "annotations")
 }
 
-kotlin { jvmToolchain(8) }
+java {
+  sourceCompatibility = JavaVersion.VERSION_1_8
+  targetCompatibility = JavaVersion.VERSION_1_8
+}
+tasks.withType<KotlinCompile>().configureEach {
+  // https://kotlinlang.org/docs/gradle-compiler-options.html#centralize-compiler-options-and-use-types
+  compilerOptions.jvmTarget = JvmTarget.JVM_1_8
+}
 
 tasks.test { useJUnitPlatform() }
 
