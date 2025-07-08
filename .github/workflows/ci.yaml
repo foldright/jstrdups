@@ -1,0 +1,38 @@
+# Quickstart for GitHub Actions
+# https://docs.github.com/en/actions/quickstart
+
+name: CI
+on: [ push, pull_request, workflow_dispatch ]
+jobs:
+  test:
+    # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#choosing-github-hosted-runners
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    name: CI on Java ${{ matrix.java }} OS ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ ubuntu-latest ]
+        java: [ 8, 11, 17, 21, 24 ]
+      fail-fast: false
+      max-parallel: 64
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          # https://github.com/actions/setup-java?tab=readme-ov-file#install-multiple-jdks
+          java-version: ${{ matrix.java }}
+          distribution: zulu
+          cache: gradle
+
+      - name: Run integration test
+        run: ./gradlew clean build
+
+      # https://remarkablemark.org/blog/2017/10/12/check-git-dirty/
+      - name: Check git dirty
+        run: |
+          git status --short
+          [ -z "$(git status --short)" ]
