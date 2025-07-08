@@ -1,5 +1,5 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 
 plugins {
   val kotlinVersion = "2.2.0"
@@ -12,7 +12,7 @@ plugins {
 group = "io.foldright"
 version = "0.2.0-SNAPSHOT"
 
-repositories { mavenCentral() }
+repositories.mavenCentral()
 
 dependencies {
   implementation("com.github.javaparser:javaparser-core:3.27.0")
@@ -28,14 +28,9 @@ configurations.runtimeClasspath {
   exclude("org.jetbrains", "annotations")
 }
 
-java {
-  sourceCompatibility = JavaVersion.VERSION_1_8
-  targetCompatibility = JavaVersion.VERSION_1_8
-}
-tasks.withType<KotlinCompile>().configureEach {
-  // https://kotlinlang.org/docs/gradle-compiler-options.html#centralize-compiler-options-and-use-types
-  compilerOptions.jvmTarget = JvmTarget.JVM_1_8
-}
+java.sourceCompatibility = JavaVersion.VERSION_1_8
+// https://kotlinlang.org/docs/gradle-compiler-options.html#centralize-compiler-options-and-use-types
+kotlin.compilerOptions.jvmTarget = JvmTarget.JVM_1_8
 
 tasks.test { useJUnitPlatform() }
 
@@ -50,19 +45,15 @@ val taskGenAutoComplete by tasks.registering(JavaExec::class) {
   args = listOf(mainClassName)
 }
 
-distributions {
+distributions.main {
   val completionFile: File = buildDir.resolve("${project.name}_completion")
-  main {
-    contents {
-      into("etc/bash_completion.d") { from(completionFile) }
-      into("share/zsh/site-functions") { from(completionFile).rename { "_${project.name}" } }
-    }
+  contents {
+    into("etc/bash_completion.d") { from(completionFile) }
+    into("share/zsh/site-functions") { from(completionFile).rename { "_${project.name}" } }
   }
 }
 
-application {
-  mainClass = mainClassName
-}
+application.mainClass = mainClassName
 
 
 tasks.distZip { dependsOn(taskGenAutoComplete) }
