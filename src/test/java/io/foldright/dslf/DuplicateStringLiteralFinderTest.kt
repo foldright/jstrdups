@@ -2,13 +2,20 @@ package io.foldright.dslf
 
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
+import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.absolute
 
 class DuplicateStringLiteralFinderTest : FunSpec({
+    val absWorkDir: Path = p().absolute()
+
     test("alignTo") {
-        p("/a/b/c").alignTo(p("/a/b/")).toString() shouldBe "/a/b/c"
-        p("c").alignTo(p("/a/b/")).toString() shouldBe "${p().absolute()}/c"
+        val pc = p("$absWorkDir", "c")
+
+        pc.alignTo(absWorkDir).toString() shouldBe pc.toString()
+
+        p("c").alignTo(absWorkDir).toString() shouldBe p("", "c").absolute().toString()
+        p("$absWorkDir", "c", "..", "d").alignTo(absWorkDir).toString() shouldBe p("", "d").absolute().toString()
 
         p("c").alignTo(p(".")).toString() shouldBe "c"
         p("c").alignTo(p("")).toString() shouldBe "c"
@@ -19,4 +26,5 @@ class DuplicateStringLiteralFinderTest : FunSpec({
     }
 })
 
-private fun p(path: String = "") = Paths.get(path)
+private fun p(first: String = "", vararg more: String): Path = Paths.get(first, *more)
+private val String.p: Path get() = Paths.get(this)
