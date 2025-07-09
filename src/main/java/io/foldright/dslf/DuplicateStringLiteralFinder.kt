@@ -1,6 +1,7 @@
 package io.foldright.dslf
 
 import com.github.javaparser.ParserConfiguration
+import com.github.javaparser.ParserConfiguration.LanguageLevel
 import com.github.javaparser.ParserConfiguration.LanguageLevel.JAVA_17
 import com.github.javaparser.Position
 import com.github.javaparser.ast.CompilationUnit
@@ -45,12 +46,18 @@ class DuplicateStringLiteralFinder : Runnable {
     )
     var minDuplicateCount: Int = 2
 
+    @Option(
+        names = ["--java-lang-level", "-L"], description = ["set java language level of input java sources."
+                + $$"Valid keys: ${COMPLETION-CANDIDATES}. default is JAVA_17"]
+    )
+    var javaLanguageLevel: LanguageLevel = JAVA_17
+
     @Option(names = ["--verbose", "-v"], description = ["print messages about progress"])
     var verbose: Boolean = false
 
     override fun run() {
         val compilationUnitList = collectCompilationUnits(
-            projectRootDir.normalizedAbsPath(), includeTestDir, verbose
+            projectRootDir.normalizedAbsPath(), includeTestDir, javaLanguageLevel, verbose
         )
         compilationUnitList.findDuplicateStrLiteralInfos(minStrLen, minDuplicateCount)
             .print(projectRootDir, absolutePath)
@@ -65,8 +72,8 @@ class DuplicateStringLiteralFinder : Runnable {
 }
 
 private fun collectCompilationUnits(
-    projectRootPath: Path, includeTestDir: Boolean, verbose: Boolean
-): List<CompilationUnit> = ParserCollectionStrategy(ParserConfiguration().setLanguageLevel(JAVA_17))
+    projectRootPath: Path, includeTestDir: Boolean, javaLanguageLevel: LanguageLevel, verbose: Boolean
+): List<CompilationUnit> = ParserCollectionStrategy(ParserConfiguration().setLanguageLevel(javaLanguageLevel))
     .collect(projectRootPath)
     .sourceRoots
     .filter { sourceRoot: SourceRoot ->

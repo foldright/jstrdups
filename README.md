@@ -10,7 +10,7 @@
 <a href="https://gitpod.io/#https://github.com/foldright/jstrdups"><img src="https://img.shields.io/badge/Gitpod-ready to code-339933?label=gitpod&logo=gitpod&logoColor=white" alt="gitpod: Ready to Code"></a>
 </p>
 
-A tool to find duplicate string literals in source code files.
+A tool to find duplicate string literals in java source code files.
 This helps identify potential code smells and opportunities for string constant refactoring.
 
 Having multiple occurrences of the same string literal across a codebase can indicate:
