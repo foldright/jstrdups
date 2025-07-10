@@ -8,6 +8,8 @@ plugins {
   kotlin("kapt") version kotlinVersion
 
   application
+
+  id("org.asciidoctor.jvm.convert") version "3.3.2"
 }
 
 group = "io.foldright"
@@ -57,16 +59,45 @@ val genAutoComplete by tasks.registering(JavaExec::class) {
   classpath = sourceSets.main.get().runtimeClasspath
   workingDir = buildDir
   mainClass = "picocli.AutoComplete"
-  args = listOf(mainClassName)
+  args = listOf(mainClassName, "--force")
 }
 tasks.distZip { dependsOn(genAutoComplete) }
 tasks.distTar { dependsOn(genAutoComplete) }
+
+val generatedPicocliDocsDir = "${buildDir}/generated-picocli-docs"
+
+/**
+ * https://picocli.info/man/gen-manpage.html
+ */
+val genManpageAsciiDoc by tasks.registering(JavaExec::class) {
+  dependsOn(tasks.classes)
+  group = "Documentation"
+  description = "Generate AsciiDoc manpage"
+
+  classpath(sourceSets.main.get().runtimeClasspath, configurations.kapt)
+  mainClass = "picocli.codegen.docgen.manpage.ManPageGenerator"
+  args = listOf(mainClassName, "--outdir=$generatedPicocliDocsDir", "-v", "--force")
+  // "--template-dir=src/docs/mantemplates"
+}
+tasks.asciidoctor {
+  dependsOn(genManpageAsciiDoc)
+  sourceDirProperty = file(generatedPicocliDocsDir)
+  outputDirProperty = file("${buildDir}/docs")
+  logDocuments = true
+  outputOptions { backends("manpage", "html5") }
+}
+tasks.assemble { dependsOn(tasks.asciidoctor) }
+tasks.distZip { dependsOn(tasks.asciidoctor) }
+tasks.distTar { dependsOn(tasks.asciidoctor) }
+
 
 distributions.main {
   val completionFile: File = buildDir.resolve("${project.name}_completion")
   contents {
     into("etc/bash_completion.d") { from(completionFile) }
     into("share/zsh/site-functions") { from(completionFile).rename { "_${project.name}" } }
+    into("share/man/man1") { from("$buildDir/docs/manpage") }
+    into("share/doc/${project.name}/html") { from("$buildDir/docs/html5") }
   }
 }
 

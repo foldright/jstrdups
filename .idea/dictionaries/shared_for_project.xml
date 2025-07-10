@@ -12,22 +12,28 @@
       <w>Xjsr</w>
       <w>Xjvm</w>
       <w>Xlint</w>
+      <w>adoc</w>
       <w>archunit</w>
       <w>autoscan</w>
       <w>buildtools</w>
       <w>dists</w>
+      <w>docgen</w>
       <w>doctoc</w>
+      <w>dorongold</w>
       <w>dslf</w>
       <w>foldright</w>
       <w>gradlew</w>
+      <w>includedir</w>
       <w>johnrengelman</w>
       <w>jstrdups</w>
       <w>kotest</w>
       <w>linkoffline</w>
       <w>linqinghua</w>
+      <w>mantemplates</w>
       <w>moditect</w>
       <w>mvnw</w>
       <w>oldratlee</w>
+      <w>outdir</w>
     </words>
   </dictionary>
 </component>
