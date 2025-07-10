@@ -9,7 +9,7 @@ plugins {
 
   application
 
-  id("org.asciidoctor.jvm.convert") version "3.3.2"
+  id("org.asciidoctor.jvm.convert") version "4.0.4"
 }
 
 group = "io.foldright"
