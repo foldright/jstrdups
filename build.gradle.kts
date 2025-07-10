@@ -39,6 +39,8 @@ java.sourceCompatibility = JavaVersion.VERSION_1_8
 // https://kotlinlang.org/docs/gradle-compiler-options.html#centralize-compiler-options-and-use-types
 kotlin.compilerOptions.jvmTarget = JvmTarget.JVM_1_8
 
+tasks.jar { exclude("META-INF/native-image") }
+
 tasks.test {
   useJUnitPlatform()
   testLogging.exceptionFormat = TestExceptionFormat.FULL
@@ -48,12 +50,17 @@ tasks.test {
 val mainClassName = "io.foldright.dslf.DuplicateStringLiteralFinder"
 val buildDir: File = layout.buildDirectory.get().asFile
 
-val taskGenAutoComplete by tasks.registering(JavaExec::class) {
-  classpath = sourceSets["main"].runtimeClasspath
+/**
+ * https://picocli.info/autocomplete.html#_generating_completion_scripts_during_the_build
+ */
+val genAutoComplete by tasks.registering(JavaExec::class) {
+  classpath = sourceSets.main.get().runtimeClasspath
   workingDir = buildDir
   mainClass = "picocli.AutoComplete"
   args = listOf(mainClassName)
 }
+tasks.distZip { dependsOn(genAutoComplete) }
+tasks.distTar { dependsOn(genAutoComplete) }
 
 distributions.main {
   val completionFile: File = buildDir.resolve("${project.name}_completion")
@@ -64,7 +71,3 @@ distributions.main {
 }
 
 application.mainClass = mainClassName
-
-
-tasks.distZip { dependsOn(taskGenAutoComplete) }
-tasks.distTar { dependsOn(taskGenAutoComplete) }
