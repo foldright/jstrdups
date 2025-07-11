@@ -2,7 +2,6 @@ package io.foldright.dslf
 
 import com.github.javaparser.ParserConfiguration
 import com.github.javaparser.ParserConfiguration.LanguageLevel
-import com.github.javaparser.ParserConfiguration.LanguageLevel.JAVA_17
 import com.github.javaparser.Position
 import com.github.javaparser.ast.CompilationUnit
 import com.github.javaparser.ast.expr.StringLiteralExpr
@@ -17,7 +16,7 @@ import kotlin.system.exitProcess
 
 
 @Command(
-    name = "jstrdups", version = ["0.2.0-SNAPSHOT"],
+    name = "jstrdups", version = ["0.3.0-SNAPSHOT"],
     description = ["Find duplicate string literals in java files under current directory"],
     mixinStandardHelpOptions = true
 )
@@ -48,9 +47,9 @@ class DuplicateStringLiteralFinder : Runnable {
 
     @Option(
         names = ["--java-lang-level", "-L"], description = ["set java language level of input java sources."
-                + $$"Valid keys: ${COMPLETION-CANDIDATES}. default is JAVA_17"]
+                + $$" Valid keys: ${COMPLETION-CANDIDATES}. default is JAVA_21"]
     )
-    var javaLanguageLevel: LanguageLevel = JAVA_17
+    var javaLanguageLevel: LanguageLevel = LanguageLevel.JAVA_21
 
     @Option(names = ["--verbose", "-v"], description = ["print messages about progress"])
     var verbose: Boolean = false
@@ -103,7 +102,8 @@ private fun CompilationUnit.findAllStringLiterals(minLen: Int): List<StrLiteral>
         .map { StrLiteral(it.value, it, this) }
 
 private fun List<GroupStrLiterals>.print(projectRootDir: Path, absolutePath: Boolean) {
-    val inJetBrainsIde: Boolean = System.getenv("TERMINAL_EMULATOR")?.contains("JetBrains", true) ?: false
+    val inJetBrainsIde: Boolean = System.getenv("TERMINAL_EMULATOR")
+        ?.contains("JetBrains", ignoreCase = true) ?: false
 
     val groupCountWidth = this.count().toString().length
     val maxDupCountWidth = this.maxOfOrNull { it.strLiterals.size.toString().length } ?: 1
