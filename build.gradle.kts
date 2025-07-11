@@ -52,28 +52,20 @@ tasks.test {
 val mainClassName = "io.foldright.dslf.DuplicateStringLiteralFinder"
 val buildDir: File = layout.buildDirectory.get().asFile
 
-/**
- * https://picocli.info/autocomplete.html#_generating_completion_scripts_during_the_build
- */
-val genAutoComplete by tasks.registering(JavaExec::class) {
+// https://picocli.info/autocomplete.html#_generating_completion_scripts_during_the_build
+val genCliAutoComplete by tasks.registering(JavaExec::class) {
   classpath = sourceSets.main.get().runtimeClasspath
   workingDir = buildDir
   mainClass = "picocli.AutoComplete"
   args = listOf(mainClassName, "--force")
 }
-tasks.distZip { dependsOn(genAutoComplete) }
-tasks.distTar { dependsOn(genAutoComplete) }
-
 val generatedPicocliDocsDir = "${buildDir}/generated-picocli-docs"
-
-/**
- * https://picocli.info/man/gen-manpage.html
- */
+// https://github.com/remkop/picocli/tree/v4.7.7/picocli-examples
+// https://picocli.info/man/gen-manpage.html
 val genManpageAsciiDoc by tasks.registering(JavaExec::class) {
   dependsOn(tasks.classes)
   group = "Documentation"
   description = "Generate AsciiDoc manpage"
-
   classpath(sourceSets.main.get().runtimeClasspath, configurations.kapt)
   mainClass = "picocli.codegen.docgen.manpage.ManPageGenerator"
   args = listOf(mainClassName, "--outdir=$generatedPicocliDocsDir", "-v", "--force")
@@ -86,9 +78,9 @@ tasks.asciidoctor {
   logDocuments = true
   outputOptions { backends("manpage", "html5") }
 }
-tasks.assemble { dependsOn(tasks.asciidoctor) }
-tasks.distZip { dependsOn(tasks.asciidoctor) }
-tasks.distTar { dependsOn(tasks.asciidoctor) }
+arrayOf(tasks.assemble, tasks.distZip, tasks.distTar).forEach {
+  it { dependsOn(genCliAutoComplete, tasks.asciidoctor) }
+}
 
 
 distributions.main {
