@@ -24,8 +24,11 @@ dependencies {
   implementation("info.picocli:picocli:$picocliVersion")
   kapt("info.picocli:picocli-codegen:$picocliVersion")
 
-  testImplementation(kotlin("test"))
-
+  testImplementation(platform("org.junit:junit-bom:5.13.3"))
+  // In order to run JUnit 5 test cases in IntelliJ IDEA, need include this dependency. more info see:
+  // https://junit.org/junit5/docs/current/user-guide/#running-tests-ide-intellij-idea
+  // https://github.com/junit-team/junit5-samples/blob/main/junit5-jupiter-starter-maven/pom.xml#L29
+  testImplementation("org.junit.jupiter:junit-jupiter")
   val kotestVersion = "5.9.1"
   testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
   testImplementation("io.kotest:kotest-assertions-core:$kotestVersion")
@@ -57,7 +60,7 @@ val genCliAutoComplete by tasks.registering(JavaExec::class) {
   classpath = sourceSets.main.get().runtimeClasspath
   workingDir = buildDir
   mainClass = "picocli.AutoComplete"
-  args = listOf(mainClassName, "--force")
+  args(mainClassName, "--force")
 }
 val generatedPicocliDocsDir = "${buildDir}/generated-picocli-docs"
 // https://github.com/remkop/picocli/tree/v4.7.7/picocli-examples
@@ -68,13 +71,13 @@ val genManpageAsciiDoc by tasks.registering(JavaExec::class) {
   description = "Generate AsciiDoc manpage"
   classpath(sourceSets.main.get().runtimeClasspath, configurations.kapt)
   mainClass = "picocli.codegen.docgen.manpage.ManPageGenerator"
-  args = listOf(mainClassName, "--outdir=$generatedPicocliDocsDir", "-v", "--force")
+  args(mainClassName, "--outdir=$generatedPicocliDocsDir", "-v", "--force")
   // "--template-dir=src/docs/mantemplates"
 }
 tasks.asciidoctor {
   dependsOn(genManpageAsciiDoc)
-  sourceDirProperty = file(generatedPicocliDocsDir)
-  outputDirProperty = file("${buildDir}/docs")
+  setSourceDir(generatedPicocliDocsDir)
+  setOutputDir("${buildDir}/docs")
   logDocuments = true
   outputOptions { backends("manpage", "html5") }
 }
