@@ -80,6 +80,10 @@ tasks.asciidoctor {
   setOutputDir("${buildDir}/docs")
   logDocuments = true
   outputOptions { backends("manpage", "html5") }
+  jvm {
+    if (!JavaVersion.current().isJava9Compatible) return@jvm
+    jvmArgs("--add-opens", "java.base/sun.nio.ch=ALL-UNNAMED", "--add-opens", "java.base/java.io=ALL-UNNAMED")
+  }
 }
 arrayOf(tasks.assemble, tasks.distZip, tasks.distTar).forEach {
   it { dependsOn(genCliAutoComplete, tasks.asciidoctor) }
