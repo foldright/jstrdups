@@ -9,6 +9,7 @@ import com.github.javaparser.utils.ParserCollectionStrategy
 import com.github.javaparser.utils.SourceRoot
 import picocli.CommandLine
 import picocli.CommandLine.*
+import java.io.PrintStream
 import java.nio.file.Path
 import kotlin.io.path.absolute
 import kotlin.io.path.relativeTo
@@ -20,7 +21,7 @@ import kotlin.system.exitProcess
     description = ["Find duplicate string literals in java files under current directory"],
     mixinStandardHelpOptions = true
 )
-class DuplicateStringLiteralFinder : Runnable {
+private class DuplicateStringLiteralFinder : Runnable {
     @Parameters(index = "0", defaultValue = ".", description = ["Project root dir, default is the current directory"])
     lateinit var projectRootDir: Path
 
@@ -58,7 +59,7 @@ class DuplicateStringLiteralFinder : Runnable {
         val compilationUnitList = collectCompilationUnits(
             projectRootDir.normalizedAbsPath(), includeTestDir, javaLanguageLevel, verbose
         )
-        compilationUnitList.findDuplicateStrLiteralInfos(minStrLen, minDuplicateCount)
+        compilationUnitList.findDuplicateStrLiterals(minStrLen, minDuplicateCount)
             .print(projectRootDir, absolutePath)
     }
 
@@ -71,8 +72,8 @@ class DuplicateStringLiteralFinder : Runnable {
 }
 
 private fun collectCompilationUnits(
-    projectRootPath: Path, includeTestDir: Boolean, javaLanguageLevel: LanguageLevel, verbose: Boolean
-): List<CompilationUnit> = ParserCollectionStrategy(ParserConfiguration().setLanguageLevel(javaLanguageLevel))
+    projectRootPath: Path, includeTestDir: Boolean, langLevel: LanguageLevel, verbose: Boolean
+): List<CompilationUnit> = ParserCollectionStrategy(ParserConfiguration().setLanguageLevel(langLevel))
     .collect(projectRootPath)
     .sourceRoots
     .filter { sourceRoot: SourceRoot ->
@@ -88,10 +89,10 @@ private fun collectCompilationUnits(
     .filter { it.result.isPresent }
     .map { it.result.get() }
 
-private fun List<CompilationUnit>.findDuplicateStrLiteralInfos(
+private fun List<CompilationUnit>.findDuplicateStrLiterals(
     minStrLen: Int, minDuplicateCount: Int
 ): List<GroupStrLiterals> = flatMap { it.findAllStringLiterals(minStrLen) }
-    .groupBy { it.value }
+    .groupBy { it.expr.value }
     .filter { it.value.size >= minDuplicateCount }
     .map { (key, value) -> GroupStrLiterals(key, value) }
     .sortedByDescending { it.strLiterals.size }
@@ -99,38 +100,28 @@ private fun List<CompilationUnit>.findDuplicateStrLiteralInfos(
 private fun CompilationUnit.findAllStringLiterals(minLen: Int): List<StrLiteral> =
     findAll(StringLiteralExpr::class.java)
         .filter { it.value.length >= minLen }
-        .map { StrLiteral(it.value, it, this) }
+        .map { StrLiteral(it, this) }
 
 private fun List<GroupStrLiterals>.print(projectRootDir: Path, absolutePath: Boolean) {
     val inJetBrainsIde: Boolean = System.getenv("TERMINAL_EMULATOR")
         ?.contains("JetBrains", ignoreCase = true) ?: false
 
-    val groupCountWidth = this.count().toString().length
-    val maxDupCountWidth = this.maxOfOrNull { it.strLiterals.size.toString().length } ?: 1
+    val groupCountWidth = this.size.toString().length
+    val dupCountWidth = this.maxOfOrNull { it.strLiterals.size.toString().length } ?: 1
 
-    forEachIndexed { index, (v, infoList) ->
-        System.out.printf(
-            "[%${groupCountWidth}s/%s](count: %${maxDupCountWidth}s) duplicate string literal \"%s\" at%n",
-            index + 1, size, infoList.size, v
+    forEachIndexed { index, (v, strLiterals) ->
+        printf(
+            "[%${groupCountWidth}s/%s](count: %${dupCountWidth}s) duplicate string literal \"%s\" at%n",
+            index + 1, size, strLiterals.size, v
         )
-        infoList.forEachIndexed { idx, (_, expr, cu) ->
+        strLiterals.forEachIndexed { idx, (expr, cu) ->
             val p: Position = expr.begin.get()
-            val indicator = String.format("  [%${maxDupCountWidth}s/%${maxDupCountWidth}s] ", idx + 1, infoList.size)
+            val indicator = String.format("  [%${dupCountWidth}s/%${dupCountWidth}s] ", idx + 1, strLiterals.size)
+            val cuPath: Path = cu.storage.get().path
             when {
-                absolutePath -> System.out.printf(
-                    "%s%s:%s:%s%n",
-                    indicator, cu.storage.get().path.normalizedAbsPath(), p.line, p.column
-                )
-
-                inJetBrainsIde -> System.out.printf(
-                    "%s.(%s:%s):%s%n",
-                    indicator, cu.storage.get().path, p.line, p.column
-                )
-
-                else -> System.out.printf(
-                    "%s%s:%s:%s%n",
-                    indicator, cu.storage.get().path.alignTo(projectRootDir), p.line, p.column
-                )
+                absolutePath -> printf("%s%s:%s:%s%n", indicator, cuPath.normalizedAbsPath(), p.line, p.column)
+                inJetBrainsIde -> printf("%s.(%s:%s):%s%n", indicator, cuPath.fileName, p.line, p.column)
+                else -> printf("%s%s:%s:%s%n", indicator, cuPath.alignTo(projectRootDir), p.line, p.column)
             }
         }
     }
@@ -139,22 +130,20 @@ private fun List<GroupStrLiterals>.print(projectRootDir: Path, absolutePath: Boo
 /**
  * String Literals with same string value
  */
-data class GroupStrLiterals(
-    val value: String,
-    val strLiterals: List<StrLiteral>
-)
+private data class GroupStrLiterals(val value: String, val strLiterals: List<StrLiteral>)
 
 /**
  * String Literal, contains related infos.
  */
-data class StrLiteral(
-    val value: String,
-    val expr: StringLiteralExpr,
-    val cu: CompilationUnit
-)
+private data class StrLiteral(val expr: StringLiteralExpr, val cu: CompilationUnit)
 
-internal fun Path.normalizedAbsPath(): Path = absolute().normalize()
+private fun Path.normalizedAbsPath(): Path = absolute().normalize()
 
-internal fun Path.alignTo(aim: Path): Path =
-    if (aim.isAbsolute) normalizedAbsPath()
-    else absolute().relativeTo(aim.absolute()).normalize()
+/**
+ * Returns a path that matches the absolute/relative form of the target path.
+ */
+internal fun Path.alignTo(target: Path): Path =
+    if (target.isAbsolute) normalizedAbsPath()
+    else absolute().relativeTo(target.absolute()).normalize()
+
+private fun printf(format: String, vararg args: Any): PrintStream = System.out.printf(format, *args)
