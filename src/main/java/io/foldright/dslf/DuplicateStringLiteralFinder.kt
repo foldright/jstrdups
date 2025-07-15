@@ -17,7 +17,7 @@ import kotlin.system.exitProcess
 
 
 @Command(
-    name = "jstrdups", version = ["0.3.0-SNAPSHOT"],
+    name = "jstrdups", version = ["0.2.1"],
     description = ["Find duplicate string literals in java files under current directory"],
     mixinStandardHelpOptions = true
 )
