@@ -3,13 +3,13 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 
 plugins {
-  val kotlinVersion = "2.2.0"
+  val kotlinVersion = "2.2.10"
   kotlin("jvm") version kotlinVersion
   kotlin("kapt") version kotlinVersion
 
   application
 
-  id("org.asciidoctor.jvm.convert") version "4.0.4"
+  id("org.asciidoctor.jvm.convert") version "4.0.5"
 }
 
 group = "io.foldright"
@@ -24,7 +24,7 @@ dependencies {
   implementation("info.picocli:picocli:$picocliVersion")
   kapt("info.picocli:picocli-codegen:$picocliVersion")
 
-  testImplementation(platform("org.junit:junit-bom:5.13.3"))
+  testImplementation(platform("org.junit:junit-bom:5.13.4"))
   // In order to run JUnit 5 test cases in IntelliJ IDEA, need include this dependency. more info see:
   // https://junit.org/junit5/docs/current/user-guide/#running-tests-ide-intellij-idea
   // https://github.com/junit-team/junit5-samples/blob/main/junit5-jupiter-starter-maven/pom.xml#L29
@@ -34,7 +34,7 @@ dependencies {
   testImplementation("io.kotest:kotest-assertions-core:$kotestVersion")
   testImplementation("io.kotest:kotest-property:$kotestVersion")
 
-  compileOnly("org.jetbrains:annotations:26.0.2")
+  compileOnly("org.jetbrains:annotations:26.0.2-1")
 }
 configurations.runtimeClasspath {
   exclude("org.jetbrains", "annotations")
