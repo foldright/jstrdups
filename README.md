@@ -1,4 +1,4 @@
-# 🔍 jstrdups
+# <div align="center"><a href="#dummy"><img src="https://github.com/user-attachments/assets/82a68998-c0c8-4a3e-9908-f46048bc8429" alt="🔍 jstrdups"></a></div>
 
 <p align="center">
 <a href="https://github.com/foldright/jstrdups/actions/workflows/ci.yaml"><img src="https://img.shields.io/github/actions/workflow/status/foldright/jstrdups/ci.yaml?branch=main&logo=github&logoColor=white" alt="Github Workflow Build Status"></a>

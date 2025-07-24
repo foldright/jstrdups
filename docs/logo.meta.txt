@@ -1,0 +1,4 @@
+logo is created by https://www.logoly.pro
+
+font: Alegreya
+logo.font-size: 60
