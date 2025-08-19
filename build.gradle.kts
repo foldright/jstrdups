@@ -29,7 +29,7 @@ dependencies {
   // https://junit.org/junit5/docs/current/user-guide/#running-tests-ide-intellij-idea
   // https://github.com/junit-team/junit5-samples/blob/main/junit5-jupiter-starter-maven/pom.xml#L29
   testImplementation("org.junit.jupiter:junit-jupiter")
-  val kotestVersion = "5.9.1"
+  val kotestVersion = "6.0.0"
   testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
   testImplementation("io.kotest:kotest-assertions-core:$kotestVersion")
   testImplementation("io.kotest:kotest-property:$kotestVersion")
