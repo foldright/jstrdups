@@ -34,7 +34,7 @@ dependencies {
   testImplementation("io.kotest:kotest-assertions-core:$kotestVersion")
   testImplementation("io.kotest:kotest-property:$kotestVersion")
 
-  compileOnly("org.jetbrains:annotations:26.0.2")
+  compileOnly("org.jetbrains:annotations:26.0.2-1")
 }
 configurations.runtimeClasspath {
   exclude("org.jetbrains", "annotations")
