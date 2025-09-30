@@ -24,7 +24,7 @@ dependencies {
   implementation("info.picocli:picocli:$picocliVersion")
   kapt("info.picocli:picocli-codegen:$picocliVersion")
 
-  testImplementation(platform("org.junit:junit-bom:5.13.4"))
+  testImplementation(platform("org.junit:junit-bom:6.0.0"))
   // In order to run JUnit 5 test cases in IntelliJ IDEA, need include this dependency. more info see:
   // https://junit.org/junit5/docs/current/user-guide/#running-tests-ide-intellij-idea
   // https://github.com/junit-team/junit5-samples/blob/main/junit5-jupiter-starter-maven/pom.xml#L29
