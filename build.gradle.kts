@@ -18,7 +18,7 @@ version = "0.3.0-SNAPSHOT"
 repositories.mavenCentral()
 
 dependencies {
-  implementation("com.github.javaparser:javaparser-core:3.27.1")
+  implementation("com.github.javaparser:javaparser-core:3.28.0")
 
   val picocliVersion = "4.7.7"
   implementation("info.picocli:picocli:$picocliVersion")
