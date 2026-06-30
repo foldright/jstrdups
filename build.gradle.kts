@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 
 plugins {
-  val kotlinVersion = "2.3.21"
+  val kotlinVersion = "2.4.0"
   kotlin("jvm") version kotlinVersion
   kotlin("kapt") version kotlinVersion
 
